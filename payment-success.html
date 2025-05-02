@@ -140,7 +140,7 @@
   
       try {
         // Call the Apps Script web app
-        const response = await fetch(`https://script.google.com/macros/s/AKfycbzp_P8zCwShL88GC2uf1kLERskUhlU7-5rltgaz_m9PCbKVQnB-ZY7R8S82r1nLz4vYYA/exec?submissionId=${ID}&action=getTickets`);
+        const response = await fetch(`https://script.google.com/macros/s/AKfycbyluPoUdsRwirdSbC3hMWvdZXK_YYAavgoS5Ah4d2_WzFayWqoCkpGQngInEPQ2NRs1eg/exec?submissionId=${ID}&action=getTickets`);
         if (!response.ok) throw new Error("Network response was not ok");
   
         const result = await response.json();
@@ -170,7 +170,7 @@
   
         // Call Apps Script to notify an administrator about the error
         try {
-          await fetch(`https://script.google.com/macros/s/AKfycbzp_P8zCwShL88GC2uf1kLERskUhlU7-5rltgaz_m9PCbKVQnB-ZY7R8S82r1nLz4vYYA/exec?submissionId=${ID}&action=errorEmail`);
+          await fetch(`https://script.google.com/macros/s/AKfycbyluPoUdsRwirdSbC3hMWvdZXK_YYAavgoS5Ah4d2_WzFayWqoCkpGQngInEPQ2NRs1eg/exec?submissionId=${ID}&action=errorEmail`);
         } catch (emailError) {
           console.error("Error sending error notification email:", emailError);
         }
