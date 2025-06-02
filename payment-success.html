@@ -118,8 +118,8 @@
     <h1>Sorry, something went wrong</h1>
     <p></p>
     <p>It's not you, it's us.  Your payment has been received and your raffle tickets have been ordered.  Your order reference is: <span id="paymentRefErr"></span>. Unfortunately, though, we seem to have run into a technical problem when trying to download them for you.</p>
-    <p>Your raffle tickets should have been sent to you by email, and our team has been notified that this error occurred so that they can investigate.</p>
-    <p>If you have not received them, please <a href="mailto:info@nailseacarnival.org.uk">get in touch</a> so that we can assist.</p>
+    <p>Our team has been notified that this error occurred so that they can investigate, and they will be in touch with you shortly to resolve the problem.</p>
+    <p>If, for any reason, you don't hear from them, please <a href="mailto:info@nailseacarnival.org.uk">get in touch</a> so that we can assist.</p>
     <p>Thank you for supporting Nailsea Carnival & Fayre.</p>
 </div>
 
@@ -154,7 +154,8 @@
   
         // If there's a PDF URL, trigger download
         if (result.ticketUrl) {
-          window.open(result.ticketUrl, '_blank');
+          console.log(result.ticketUrl);
+	  window.open(result.ticketUrl, '_blank');
 	  //const link = document.createElement("a");
           //link.href = result.ticketUrl;
           //link.download = `raffle_ticket_${ID}.pdf`;
@@ -165,11 +166,18 @@
           const fallback = document.getElementById("fallbackLink");
           fallback.href = result.ticketUrl;
           fallback.style.display = "inline";
+          
+        } else {
+          console.log ("Null or undefined URL returned: " + result.ticketUrl);
+          document.getElementById("loading-overlay").style.display = "none";
+          document.getElementById("container").style.display = "none"; 
+          document.getElementById("failure").style.display = "block";
         }
   
       } catch (error) {
         console.error("Error fetching PDF:", error);
         document.getElementById("loading-overlay").style.display = "none";
+        document.getElementById("container").style.display = "none"; 
         document.getElementById("failure").style.display = "block";
   
         // Call Apps Script to notify an administrator about the error
