@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>1st Nailsea Scouts - Hall Bookings Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6 font-sans">
+
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold text-blue-800 mb-6">1st Nailsea Scouts - Hall Bookings Manager</h1>
+
+    <!-- Booking Table -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-gray-700">Upcoming Bookings</h2>
+        <button onclick="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+          + Add Booking
+        </button>
+      </div>
+      <table class="w-full table-auto border-collapse">
+        <thead>
+          <tr class="bg-gray-200 text-left text-sm">
+            <th class="p-2">Booking Ref</th>
+            <th class="p-2">Email</th>
+            <th class="p-2">Date</th>
+            <th class="p-2">Time</th>
+            <th class="p-2">Notes</th>
+            <th class="p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="bookingsTable" class="text-sm">
+          <!-- Filled dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+      <h2 id="modalTitle" class="text-xl font-bold mb-4">Add Booking</h2>
+      <form id="bookingForm" onsubmit="submitBooking(event)">
+        <input type="hidden" id="bookingRef" />
+
+        <label class="block mb-2">
+          <span class="text-sm font-medium">Customer Email</span>
+          <input type="email" id="email" required class="w-full mt-1 border rounded px-3 py-2" />
+        </label>
+
+        <label class="block mb-2">
+          <span class="text-sm font-medium">Booking Date</span>
+          <input type="date" id="date" required class="w-full mt-1 border rounded px-3 py-2" />
+        </label>
+
+        <div class="flex gap-4 mb-2">
+          <label class="w-1/2">
+            <span class="text-sm font-medium">Start Time</span>
+            <input type="time" id="startTime" required class="w-full mt-1 border rounded px-3 py-2" />
+          </label>
+          <label class="w-1/2">
+            <span class="text-sm font-medium">End Time</span>
+            <input type="time" id="endTime" required class="w-full mt-1 border rounded px-3 py-2" />
+          </label>
+        </div>
+
+        <label class="block mb-4">
+          <span class="text-sm font-medium">Notes</span>
+          <textarea id="notes" rows="2" class="w-full mt-1 border rounded px-3 py-2"></textarea>
+        </label>
+
+        <div class="flex justify-between">
+          <button type="button" onclick="closeModal()" class="text-gray-600 hover:underline">Cancel</button>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Save Booking
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const BACKEND_ID = 'AKfycbwnFwAkIMslbzv9kGd51x8qu94jQXJ90YmpkGtV5MAtmLyCExUL-fzhFwjeZ_WTKlG9rA';
+    const GAS_URL = 'https://script.google.com/a/macros/1stnailseascouts.org.uk/s/';
+    const BACKEND_URL = `${GAS_URL}${BACKEND_ID}/exec`;
+    console.log (BACKEND_URL);
+    function openModal(booking = null) {
+      document.getElementById("modal").classList.remove("hidden");
+      document.getElementById("modalTitle").textContent = booking ? "Edit Booking" : "Add Booking";
+      document.getElementById("bookingRef").value = booking?.ref || '';
+      document.getElementById("email").value = booking?.email || '';
+      document.getElementById("date").value = booking?.date || '';
+      document.getElementById("startTime").value = booking?.startTime || '';
+      document.getElementById("endTime").value = booking?.endTime || '';
+      document.getElementById("notes").value = booking?.notes || '';
+    }
+
+    function closeModal() {
+      document.getElementById("modal").classList.add("hidden");
+      document.getElementById("bookingForm").reset();
+    }
+
+    function submitBooking(e) {
+      e.preventDefault();
+      const data = {
+        action: document.getElementById("bookingRef").value ? 'updateBooking' : 'createBooking',
+        bookingRef: document.getElementById("bookingRef").value,
+        email: document.getElementById("email").value,
+        date: document.getElementById("date").value,
+        startTime: document.getElementById("startTime").value,
+        endTime: document.getElementById("endTime").value,
+        notes: document.getElementById("notes").value
+      };
+      fetch(BACKEND_URL, {
+        redirect: "follow",
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.json())
+      .then(response => {
+        alert(response.message || 'Booking saved');
+        closeModal();
+        loadBookings();
+      })
+      .catch(err => alert("Error saving booking: " + err));
+    }
+
+    function loadBookings() {
+      fetch(BACKEND_URL, {
+        redirect: "follow",
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify({ action: 'getBookings' }),
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const table = document.getElementById("bookingsTable");
+        table.innerHTML = "";
+        data.bookings.forEach(booking => {
+          const tr = document.createElement("tr");
+          tr.classList.add("border-b", "hover:bg-gray-50", "cursor-pointer");
+          tr.innerHTML = `
+            <td class="p-2">${booking.ref}</td>
+            <td class="p-2">${booking.email}</td>
+            <td class="p-2">${booking.date}</td>
+            <td class="p-2">${booking.startTime}–${booking.endTime}</td>
+            <td class="p-2">${booking.notes}</td>
+            <td class="p-2 text-blue-600 hover:underline">Edit</td>
+          `;
+          tr.addEventListener("click", () => openModal(booking));
+          table.appendChild(tr);
+        });
+      })
+      .catch(err => alert("Error loading bookings: " + err));
+    }
+
+    window.onload = loadBookings;
+  </script>
+</body>
+</html>
